@@ -1,0 +1,994 @@
+/* ============================================================================
+   apuntes.css — sistema visual de "apuntes bonitos" (carpeta de apuntes a mano)
+   ----------------------------------------------------------------------------
+   De donde sale: dos cuadernos de referencia.
+     (1) Hoja de lettering: ~40 tratamiento de titulo dibujados a mano sobre
+         papel cuadriculado conESTER perforado.
+     (2) Cadernos de "apuntes bonitos" reales: carpeta con divisorias de color,
+         titulo con barrido de resaltador, cajas punteadas pastel, flechas,
+         numeros circulados y doodles.
+
+   Como se usa esto:
+     - Las clases `.t-*` son TITULOS. Se usan en h1..h4 o en divs.
+     - Las clases `.a-*` son BLOQUES de apunte (definicion, tip, caja, resumen).
+     - Las clases `.p-*` son SUPERFICIES (papel, cuadros, rayas, carpeta).
+     - Las clases `.d-*` son DECORACION (cinta, holes, chispas, doodles).
+   Cada bloque tiene un comentario con "cuando usarla / cuando NO".
+
+   Importar:  <link rel="stylesheet" href="apuntes.css">
+   o incrustar:  leer el archivo y pegarlo en un <style>
+   ========================================================================= */
+
+@import url("papeles.css");
+@import url("fuentes/fuentes.css");
+
+/* ============================================================ 1. TOKENS ==== */
+
+:root {
+  /* --- superficies y tinta ---------------------------------------------
+     ACÁ NO SE DEFINEN. Los Papers viven en papeles.css y son dueños de
+     --papel, --papel-bravo, --papel-caja, --cuadricula, --cuadricula-2,
+     --tinta, --tinta-2 y --tinta-3. Estaban duplicados acá y, como este
+     archivo se carga despues (por el @import), el :root de aqui pisaba al
+     data-papel elegido y todas las hojas salian del mismo color. */
+  --sombra-hoja:  rgba(60, 42, 30, .16);
+  --sombra-baja:  rgba(60, 42, 30, .09);
+
+  /* --- acentos pasteles (los highs de los cuadernos) --------------------- */
+  --rosa:      #ffb3c9;
+  --rosa-fuerte:#ef5f8c;
+  --durazno:   #ffd0b3;
+  --durazno-fuerte:#f08a5d;
+  --menta:     #a8e3cb;
+  --menta-fuerte:#2fae83;
+  --lila:      #d7c9f7;
+  --lila-fuerte:#8b6dd8;
+  --manteca:   #ffe79b;
+  --manteca-fuerte:#e0a72c;
+  --celeste:   #b3dcf7;
+  --celeste-fuerte:#3f92cc;
+  --coral:     #ff9f8f;
+  --coral-fuerte:#e2563f;
+
+  /* alias semanticos: usar estos, no los crudos */
+  --acento:      var(--rosa-fuerte);
+  --acento-fondo:var(--rosa);
+  --resaltador:  var(--manteca);
+
+  /* --- tipografia -------------------------------------------------------- */
+  --f-titulo:   "Caveat", "Segoe Script", cursive;
+  --f-pincel:   "Yellowtail", "Segoe Script", cursive;
+  --f-manus:    "Kalam", "Segoe Print", sans-serif;
+  --f-manus-2:  "Patrick Hand", "Segoe Print", sans-serif;
+  --f-infantil: "Architects Daughter", "Comic Sans MS", cursive;
+  --f-redonda:  "Indie Flower", "Comic Sans MS", cursive;
+  --f-fina:     "Shadows Into Light", cursive;
+  --f-condensada:"Oswald", "Arial Narrow", sans-serif;
+  --f-didone:   "Playfair Display", Georgia, serif;
+  --f-angosta:  "Amatic SC", "Arial Narrow", cursive;
+  --f-bocetillo:"Six Caps", "Arial Narrow", sans-serif;
+  --f-marcador: "Permanent Marker", "Comic Sans MS", cursive;
+  --f-mono:     "Space Mono", "Courier New", monospace;
+  --f-cuerpo:   "Segoe UI", system-ui, -apple-system, "Helvetica Neue", sans-serif;
+
+  /* --- medidas ----------------------------------------------------------- */
+  --ancho:      880px;      /* ancho de la hoja */
+  --alto-titulo: 1.05;
+  --r-chico:    6px;
+  --r:          12px;
+  --r-grande:   20px;
+  --gutter:     28px;
+
+  /* --- ritmo ------------------------------------------------------------- */
+  --gap:        1.1rem;
+  --gap-2:      1.8rem;
+  --trazo:      2px;       /* grosor de linea dibujada */
+}
+
+/* Tema oscuro: no es "invertir", es papel de noche. Pasteles apagados. */
+@media (prefers-color-scheme: dark) {
+  :root[data-tema="noche"] {
+    --papel:       #221d1a;
+    --papel-bravo: #272120;
+    --papel-caja:  #2e2725;
+    --cuadricula:  #3b3230;
+    --cuadricula-2:#2b2422;
+    --tinta:       #f2e9df;
+    --tinta-2:     #b6a89c;
+    --tinta-3:     #7d7167;
+    --rosa-fuerte: #ff9ab5;
+    --durazno-fuerte:#ffab84;
+    --menta-fuerte:#6fd6ab;
+    --lila-fuerte: #b39ef0;
+    --manteca-fuerte:#ffd772;
+    --celeste-fuerte:#7fc0ee;
+    --sombra-hoja: rgba(0, 0, 0, .5);
+  }
+}
+
+/* ============================================================ 2. RESET ===== */
+
+*, *::before, *::after { box-sizing: border-box; }
+
+.apuntes {
+  margin: 0;
+  padding: 0;
+  background: var(--cuadricula-2);
+  color: var(--tinta);
+  font-family: var(--f-cuerpo);
+  font-size: 16px;
+  line-height: 1.62;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+.apuntes h1, .apuntes h2, .apuntes h3, .apuntes h4, .apuntes h5 {
+  margin: 0 0 .45em;
+  line-height: 1.15;
+  font-weight: 700;
+}
+.apuntes p { margin: 0 0 1em; }
+.apuntes a { color: var(--acento); text-underline-offset: 3px; }
+.apuntes ul, .apuntes ol { margin: 0 0 1em; padding-left: 1.5em; }
+.apuntes li { margin: .3em 0; }
+.apuntes img { max-width: 100%; height: auto; border-radius: var(--r-chico); }
+.apuntes code {
+  font-family: var(--f-mono); font-size: .88em;
+  background: var(--papel-caja); padding: .1em .35em;
+  border: var(--trazo) solid var(--tinta); border-radius: 5px;
+}
+.apuntes pre {
+  background: var(--papel-caja); border: var(--trazo) solid var(--tinta);
+  border-radius: var(--r); padding: 14px 16px; overflow-x: auto;
+  box-shadow: 3px 3px 0 var(--sombra-baja);
+}
+.apuntes pre code { background: none; border: 0; padding: 0; }
+.apuntes hr {
+  border: 0; height: 0; margin: var(--gap-2) 0;
+  border-top: var(--trazo) dashed var(--tinta-3);
+}
+.apuntes table { border-collapse: collapse; width: 100%; margin: 0 0 1.2em; }
+.apuntes th, .apuntes td { padding: 7px 11px; text-align: left; }
+.apuntes th { border-bottom: var(--trazo) solid var(--tinta); }
+.apuntes tbody tr:nth-child(odd) { background: rgba(0, 0, 0, .025); }
+
+/* ======================================================= 3. SUPERFICIES ==== */
+
+/* p-hoja: una hoja de cuaderno. Es el contenedor de una pagina de apunte. */
+.p-hoja {
+  position: relative;
+  width: min(100%, var(--ancho));
+  margin: 0 auto var(--gap-2);
+  padding: 42px 52px 56px 78px;   /* el padding izq deja lugar al margen + agujeros */
+  /* background-COLOR, nunca el atajo `background:`: el atajo tambien resetea
+     background-image a none, y como .p-textura (que trae la textura) esta en
+     papeles.css, que se carga antes, el atajo lo pisaba. Todas las hojas
+     salian lisas aunque --textura estuviera bien definida. */
+  background-color: var(--papel-bravo, var(--papel));
+  border-radius: 3px;
+  box-shadow: 0 1px 0 rgba(255,255,255,.7) inset,
+              0 10px 26px -12px var(--sombra-hoja);
+}
+
+/* Las texturas viven en papeles.css (--textura + --tam-textura) y se aplican con
+   .p-textura + data-papel="...". Ver assets/papeles.css: 20 papeles.
+   Los .p-cuadros / .p-rayas / .p-punteado de la v1 se mantienen como alias. */
+
+/* d-agujeros: los perforados del cuaderno, del lado izq. */
+.p-hoja.d-agujeros::before {
+  content: "";
+  position: absolute; inset: 0 auto 0 22px;
+  width: 22px;
+  background:
+    radial-gradient(circle at 11px 62px, var(--papel-caja) 0 8px, transparent 8.5px),
+    radial-gradient(circle at 11px 172px, var(--papel-caja) 0 8px, transparent 8.5px),
+    radial-gradient(circle at 11px 282px, var(--papel-caja) 0 8px, transparent 8.5px),
+    radial-gradient(circle at 11px 392px, var(--papel-caja) 0 8px, transparent 8.5px),
+    radial-gradient(circle at 11px 502px, var(--papel-caja) 0 8px, transparent 8.5px);
+  border-radius: 2px;
+  opacity: .95;
+}
+
+/* d-margen: la linea vertical de margen, en rosa. */
+.p-hoja.d-margen::after {
+  content: "";
+  position: absolute; top: 0; bottom: 0; left: 62px;
+  border-left: 2px solid color-mix(in srgb, var(--rosa-fuerte) 55%, transparent);
+  pointer-events: none;
+}
+
+/* p-carpeta: la carpeta fisica que contiene los apuntes. */
+.p-carpeta {
+  position: relative;
+  padding: 26px 22px 30px;
+  background: var(--durazno);
+  border-radius: 4px 14px 14px 4px;
+  box-shadow: 0 12px 30px -14px var(--sombra-hoja);
+}
+/* el lomo de la carpeta */
+.p-carpeta::before {
+  content: "";
+  position: absolute; inset: 0 auto 0 0; width: 14px;
+  background: linear-gradient(90deg,
+    color-mix(in srgb, var(--tinta) 12%, transparent) 0 2px,
+    transparent 2px 6px,
+    color-mix(in srgb, #fff 35%, transparent) 6px 10px,
+    transparent 10px);
+  border-radius: 4px 0 0 4px;
+}
+
+/* ====================================================== 4. LETTERING ======= */
+/* Catalogo del cuaderno 1. Cada uno es un tratamiento distinto del mismo texto
+   "title", para elegir segun la jerarquia de la pagina.
+   Cuando NO usar ninguno: en un indice con 20 entradas, los titulos deben ser
+   discretos. Un cuaderno con 15 estilos de titulo es ruido. Regla: 1 estilo de
+   titulo por nivel de jerarquia, en toda la carpeta.                        */
+
+/* t-cursiva — el titulo principal por defecto. Como "titulo asombroso". */
+.t-cursiva {
+  font-family: var(--f-titulo);
+  font-size: clamp(2.4rem, 6.5vw, 4.2rem);
+  font-weight: 700;
+  line-height: 1;
+  letter-spacing: .01em;
+  color: var(--tinta);
+}
+
+/* t-cursiva-con-luz — misma letra, con un realce sutil de tinta debajo. */
+.t-cursiva-con-luz {
+  position: relative; z-index: 0; display: inline-block;
+  font-family: var(--f-titulo); font-weight: 700;
+  font-size: clamp(2.2rem, 5.6vw, 3.6rem); line-height: 1.02;
+}
+.t-cursiva-con-luz::after {
+  content: attr(data-eco) attr(data-eco);
+  position: absolute; z-index: -1; left: 2px; top: 3px;
+  color: var(--rosa-fuerte); opacity: .55;
+  pointer-events: none;
+}
+
+/* t-lapiz — condensada alta y fina, muy espaciada. El "TITLE" de la 1a fila. */
+.t-lapiz {
+  font-family: var(--f-condensada);
+  font-weight: 200;
+  font-size: clamp(2rem, 5.4vw, 3.4rem);
+  letter-spacing: .26em;
+  text-transform: uppercase;
+  line-height: 1;
+}
+
+/* t-espaciada — caps con tracking enorme. "T I T E". */
+.t-espaciada {
+  font-family: var(--f-condensada);
+  font-weight: 300;
+  font-size: clamp(1.6rem, 4vw, 2.4rem);
+  letter-spacing: .48em;
+  text-indent: .48em;      /* compensa el tracking del ultimo caracter */
+  text-transform: uppercase;
+}
+
+/* t-angosta — caps angostas hechas a mano, el aire de "bullet journal". */
+.t-angosta {
+  font-family: var(--f-angosta);
+  font-weight: 700;
+  font-size: clamp(2rem, 5vw, 3rem);
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  line-height: .95;
+}
+
+/* t-bocetillo — caps bocetilladas, como rotuladas con marcador grueso. */
+.t-bocetillo {
+  font-family: var(--f-bocetillo);
+  font-size: clamp(1.9rem, 5vw, 3.2rem);
+  letter-spacing: .06em;
+  line-height: 1;
+}
+
+/* t-marcador — rotulado a marcador permanente. */
+.t-marcador {
+  font-family: var(--f-marcador);
+  font-size: clamp(1.7rem, 4.4vw, 2.7rem);
+  line-height: 1.1;
+  letter-spacing: .01em;
+}
+
+/* t-pincel — brush script con entrada y salida marcadas. */
+.t-pincel {
+  font-family: var(--f-pincel);
+  font-size: clamp(2.2rem, 6vw, 3.8rem);
+  line-height: 1.05;
+}
+
+/* t-manuscrita — escritura a mano legible, para subtitulos. */
+.t-manuscrita {
+  font-family: var(--f-manus);
+  font-size: clamp(1.3rem, 3.2vw, 1.9rem);
+  line-height: 1.25;
+  color: var(--tinta-2);
+}
+
+/* t-infantil — redondita, para cuando el apunte es liviano. */
+.t-infantil {
+  font-family: var(--f-infantil);
+  font-size: clamp(1.7rem, 4.2vw, 2.5rem);
+  line-height: 1.15;
+}
+
+/* t-redonda — manuscrita redondita, la letra de las libretas chicas. */
+.t-redonda {
+  font-family: var(--f-redonda);
+  font-size: clamp(1.5rem, 3.8vw, 2.2rem);
+  line-height: 1.2;
+}
+
+/* t-fina — cursiva fina, para anotaciones al margen. */
+.t-fina {
+  font-family: var(--f-fina);
+  font-size: 1.3rem;
+  line-height: 1.35;
+  color: var(--tinta-2);
+}
+
+/* t-didone — Didone con doble trazo inline, como la 2a fila del cuaderno. */
+.t-didone {
+  font-family: var(--f-didone);
+  font-weight: 900;
+  font-size: clamp(2rem, 5.4vw, 3.4rem);
+  line-height: 1;
+  text-transform: uppercase;
+  letter-spacing: .04em;
+  color: var(--tinta);
+  -webkit-text-stroke: 1px var(--tinta);
+  text-shadow: 3px 3px 0 var(--rosa), 6px 6px 0 color-mix(in srgb, var(--lila) 70%, transparent);
+}
+
+/* t-bloque — 3D: el mismo texto con sombra profunda, del fondo del cuaderno. */
+.t-bloque {
+  font-family: var(--f-condensada);
+  font-weight: 500;
+  font-size: clamp(1.9rem, 5vw, 3rem);
+  line-height: 1;
+  text-transform: uppercase;
+  letter-spacing: .1em;
+  color: var(--papel-bravo);
+  text-shadow:
+    1px 1px 0 var(--tinta), 2px 2px 0 var(--tinta), 3px 3px 0 var(--tinta),
+    4px 4px 0 var(--tinta), 5px 5px 0 var(--tinta-fuerte, var(--durazno-fuerte)),
+    6px 6px 0 var(--tinta), 7px 7px 0 var(--tinta), 8px 8px 0 var(--tinta);
+}
+
+/* t-tinta — relleno con degradado, la version "ink". */
+.t-tinta {
+  font-family: var(--f-didone);
+  font-weight: 900;
+  font-size: clamp(2rem, 5.4vw, 3.4rem);
+  line-height: 1;
+  background: linear-gradient(180deg, var(--tinta) 58%, var(--rosa-fuerte) 58%);
+  -webkit-background-clip: text; background-clip: text;
+  color: transparent;
+}
+
+/* t-subrayado-al-borrador — el texto con el subrayado del resaltador. */
+.t-subrayado-al-borrador {
+  position: relative; z-index: 0; display: inline-block;
+  font-family: var(--f-titulo); font-weight: 700;
+  font-size: clamp(1.8rem, 4.6vw, 2.8rem); line-height: 1.15;
+}
+.t-subrayado-al-borrador::after {
+  content: ""; position: absolute; z-index: -1;
+  left: -.06em; right: -.06em; bottom: .1em; height: .42em;
+  background: var(--resaltador); opacity: .62;
+  transform: rotate(-.6deg);
+  border-radius: 3px 8px 4px 10px;
+}
+
+/* t-barrido — el "swipe" de marcador detras del titulo. El gesto mas usado. */
+.t-barrido {
+  position: relative; z-index: 0; display: inline-block;
+  isolation: isolate;
+  padding: 0 .06em;
+}
+.t-barrido::before {
+  content: ""; position: absolute; z-index: -1;
+  inset: .1em -.1em;
+  background: var(--acento-fondo, var(--rosa));
+  opacity: .5;
+  transform: rotate(-1.1deg) skewX(-7deg);
+  border-radius: 4px 14px 5px 16px;
+}
+
+/* t-rayado — relleno rayado (hatch). Para sellos y etiquetas. */
+.t-rayado {
+  background-image: repeating-linear-gradient(
+    -45deg,
+    transparent 0 5px,
+    color-mix(in srgb, currentColor 22%, transparent) 5px 7px
+  );
+}
+
+/* --- TITULOS DENTRO DE UN CONTENEDOR DIBUJADO --------------------------- */
+
+/* t-en-caja — caja doble dibujada a mano. El recuadro clasico. */
+.t-en-caja {
+  display: inline-block;
+  padding: .34em .8em .4em;
+  border: var(--trazo) solid var(--tinta);
+  border-radius: 4px;
+  transform: rotate(-.7deg);
+  box-shadow: 3px 3px 0 color-mix(in srgb, var(--tinta) 22%, transparent);
+}
+.t-en-caja > * { position: relative; z-index: 1; }
+.t-en-caja::before {
+  content: ""; position: absolute; inset: 4px;
+  border: 1.5px solid var(--tinta); border-radius: 2px;
+  opacity: .7; pointer-events: none;
+}
+
+/* t-en-cinta — cinta con las puntas en V (las dos de la 3a fila). */
+.t-en-cinta {
+  display: inline-block;
+  padding: .38em 1.4em .44em;
+  background: var(--acento-fondo, var(--rosa));
+  clip-path: polygon(0 0, 100% 0, calc(100% - 1.1em) 50%, 100% 100%, 0 100%, 1.1em 50%);
+  color: var(--tinta);
+}
+
+/* t-en-galeria — banderines colgando de una cuerda. Para indice de temas. */
+.t-en-galeria {
+  display: inline-flex; align-items: flex-start; gap: 2px;
+  padding-top: 14px;
+  position: relative;
+}
+.t-en-galeria::before {
+  content: ""; position: absolute; top: 2px; left: -4px; right: -4px;
+  border-top: 2px solid var(--tinta);
+  transform: rotate(-1.2deg);
+}
+.t-en-galeria > span {
+  display: inline-block;
+  padding: .3em .7em .36em;
+  border: var(--trazo) solid var(--tinta);
+  border-top: 0;
+  clip-path: polygon(0 0, 100% 0, 100% 100%, 50% 78%, 0 100%);
+  background: var(--papel-bravo);
+  font-family: var(--f-angosta); font-size: 1.5rem; letter-spacing: .08em;
+  text-transform: uppercase;
+}
+
+/* t-en-ticket — etiqueta con muescas laterales, como un boleto. */
+.t-en-ticket {
+  display: inline-block;
+  padding: .4em 1.6em .45em;
+  border: var(--trazo) solid var(--tinta);
+  border-radius: 3px;
+  background: var(--papel-bravo);
+  /* las dos muescas */
+  -webkit-mask:
+    radial-gradient(circle at 0 50%, transparent 7px, #000 7.5px) left / 51% 100% no-repeat,
+    radial-gradient(circle at 100% 50%, transparent 7px, #000 7.5px) right / 51% 100% no-repeat;
+  mask:
+    radial-gradient(circle at 0 50%, transparent 7px, #000 7.5px) left / 51% 100% no-repeat,
+    radial-gradient(circle at 100% 50%, transparent 7px, #000 7.5px) right / 51% 100% no-repeat;
+}
+
+/* t-en-calendario — etiqueta colgante "DIA 01", con cuerda. */
+.t-en-calendario {
+  display: inline-block;
+  padding: .5em .95em .55em;
+  border: var(--trazo) solid var(--tinta);
+  border-radius: 3px;
+  background: var(--papel-caja);
+  font-family: var(--f-condensada); letter-spacing: .16em;
+  text-transform: uppercase; text-align: center; line-height: 1.1;
+  position: relative;
+}
+.t-en-calendario::before {
+  content: ""; position: absolute; left: 50%; top: -16px;
+  width: 1.5px; height: 16px; margin-left: -.75px;
+  background: var(--tinta);
+}
+.t-en-calendario b { display: block; font-size: 1.9rem; }
+
+/* t-en-globo — globo de dialogo. Para voz del autor, no para el titulo. */
+.t-en-globo {
+  display: inline-block;
+  position: relative;
+  padding: .5em 1em .55em;
+  border: var(--trazo) solid var(--tinta);
+  border-radius: 18px 18px 18px 4px;
+  background: var(--papel-caja);
+}
+.t-en-globo::after {
+  content: ""; position: absolute; left: 22px; bottom: -9px;
+  width: 12px; height: 12px;
+  border-right: var(--trazo) solid var(--tinta);
+  border-bottom: var(--trazo) solid var(--tinta);
+  background: var(--papel-caja);
+  transform: skewY(28deg) rotate(6deg);
+}
+
+/* t-en-sello — sello circular con el titulo en el borde. Para "IMPORTANTE". */
+.t-en-sello {
+  display: inline-grid; place-items: center;
+  width: 108px; height: 108px;
+  border: 3px double var(--coral-fuerte);
+  border-radius: 50%;
+  color: var(--coral-fuerte);
+  font-family: var(--f-angosta); font-size: 1.45rem; line-height: 1;
+  letter-spacing: .1em; text-transform: uppercase; text-align: center;
+  transform: rotate(-11deg);
+  box-shadow: 0 0 0 2px var(--papel-bravo) inset;
+}
+
+/* --- SUBTITULOS --------------------------------------------------------- */
+
+/* s-guion — subseccion simple, la que se usa 40 veces por apunte. */
+.s-guion {
+  font-family: var(--f-cuerpo);
+  font-weight: 700;
+  font-size: 1.12rem;
+  letter-spacing: .02em;
+  padding-bottom: .3em;
+  border-bottom: var(--trazo) solid color-mix(in srgb, var(--tinta) 30%, transparent);
+  margin-top: 1.9em;
+}
+
+/* s-marcador — subseccion con el marquito de color. */
+.s-marcador {
+  font-family: var(--f-cuerpo); font-weight: 700; font-size: 1.06rem;
+  padding-left: 1.5em; position: relative; margin-top: 1.8em;
+}
+.s-marcador::before {
+  content: ""; position: absolute; left: 0; top: .12em; bottom: .12em;
+  width: 1em;
+  background: var(--acento-fondo, var(--rosa));
+  transform: skewX(-8deg);
+  border-radius: 2px;
+}
+
+/* s-manuscrita — subseccion escrita a mano. Airy. */
+.s-manuscrita {
+  font-family: var(--f-manus); font-weight: 400; font-size: 1.42rem;
+  color: var(--tinta); margin-top: 1.7em;
+}
+
+/* s-etiqueta — micro caps sobre una caja de color. Etiquetas de categoria. */
+.s-etiqueta {
+  display: inline-block;
+  font-family: var(--f-condensada); font-weight: 500;
+  font-size: .78rem; letter-spacing: .18em; text-transform: uppercase;
+  padding: .18em .7em .24em;
+  border: 1.5px solid var(--tinta);
+  border-radius: 3px;
+  background: var(--acento-fondo, var(--menta));
+  transform: rotate(-1deg);
+}
+
+/* ==================================================== 5. BLOQUES DE APUNTE = */
+
+/* a-definicion — la caja mas usada: definicion con termino en Pastel.
+   Cuando NO: para texto corrido. Una pagina con 8 cajasdefinicion no se lee. */
+.a-definicion {
+  position: relative;
+  margin: 1.1em 0 1.3em;
+  padding: 1em 1.15em 1.05em;
+  background: var(--acento-fondo-10, color-mix(in srgb, var(--menta) 16%, var(--papel-caja)));
+  border: var(--trazo) dashed color-mix(in srgb, var(--tinta) 55%, transparent);
+  border-radius: var(--r);
+}
+.a-definicion > strong:first-child,
+.a-definicion > b:first-child {
+  display: block;
+  font-size: 1.14rem;
+  margin-bottom: .2em;
+}
+.a-definicion p:last-child { margin-bottom: 0; }
+
+/* a-tip — el recuadro que se lee primero. Color calido. */
+.a-tip {
+  margin: 1.2em 0;
+  padding: 1em 1.15em 1.05em 3.1em;
+  position: relative;
+  background: color-mix(in srgb, var(--manteca) 26%, var(--papel-caja));
+  border: var(--trazo) solid var(--tinta);
+  border-radius: var(--r);
+  box-shadow: 4px 4px 0 color-mix(in srgb, var(--manteca-fuerte) 35%, transparent);
+}
+.a-tip::before {
+  content: "TIP"; position: absolute; left: 1em; top: .85em;
+  font-family: var(--f-angosta); font-size: 1.25rem; letter-spacing: .1em;
+  color: var(--manteca-fuerte);
+}
+.a-tip > :last-child { margin-bottom: 0; }
+
+/* a-cuidado — misma forma, otro color. Para lo que no hay que hacer. */
+.a-cuidado {
+  margin: 1.2em 0;
+  padding: 1em 1.15em 1.05em 3.1em;
+  position: relative;
+  background: color-mix(in srgb, var(--coral) 20%, var(--papel-caja));
+  border: var(--trazo) solid var(--tinta);
+  border-radius: var(--r);
+  box-shadow: 4px 4px 0 color-mix(in srgb, var(--coral-fuerte) 32%, transparent);
+}
+.a-cuidado::before {
+  content: "OJO"; position: absolute; left: 1em; top: .85em;
+  font-family: var(--f-angosta); font-size: 1.25rem; letter-spacing: .1em;
+  color: var(--coral-fuerte);
+}
+.a-cuidado > :last-child { margin-bottom: 0; }
+
+/* a-resumen — el cierre. Fondo pastel solido, borde marcado. */
+.a-resumen {
+  margin: 1.6em 0 1em;
+  padding: 1.15em 1.25em 1.1em;
+  background: var(--lila);
+  border: var(--trazo) solid var(--tinta);
+  border-radius: var(--r-grande);
+  position: relative;
+}
+.a-resumen > h3, .a-resumen > .s-guion, .a-resumen > strong:first-child {
+  margin-top: 0;
+}
+.a-resumen > :last-child { margin-bottom: 0; }
+.a-resumen::before {
+  content: ""; position: absolute; inset: 7px;
+  border: 1.5px dashed color-mix(in srgb, var(--tinta) 45%, transparent);
+  border-radius: calc(var(--r-grande) - 5px);
+  pointer-events: none;
+}
+
+/* a-ejemplo — bloque con fondo rayado, para calculos y pseudocodigo. */
+.a-ejemplo {
+  margin: 1.2em 0;
+  padding: .95em 1.1em 1em;
+  background-color: var(--papel-caja);
+  background-image: repeating-linear-gradient(
+    45deg, transparent 0 9px,
+    color-mix(in srgb, var(--celeste) 26%, transparent) 9px 11px
+  );
+  border: var(--trazo) solid var(--tinta);
+  border-radius: var(--r);
+  font-family: var(--f-mono);
+  font-size: .93rem;
+  line-height: 1.55;
+}
+.a-ejemplo > :last-child { margin-bottom: 0; }
+
+/* a-paso — paso a paso con numero circulado. Para procedimiento. */
+.a-pasos { counter-reset: paso; margin: 1.2em 0; padding: 0; list-style: none; }
+.a-pasos > li {
+  counter-increment: paso;
+  position: relative;
+  padding-left: 3rem;
+  margin: .85em 0;
+  min-height: 1.7rem;
+}
+.a-pasos > li::before {
+  content: counter(paso);
+  position: absolute; left: 0; top: -.05em;
+  width: 2rem; height: 2rem;
+  display: grid; place-items: center;
+  border: var(--trazo) solid var(--tinta);
+  border-radius: 50%;
+  background: var(--acento-fondo, var(--rosa));
+  font-family: var(--f-condensada); font-weight: 500; font-size: 1.05rem;
+  transform: rotate(-6deg);
+}
+
+/* a-al-margen — anotacion que se lee fuera del flujo. Viaja al margen con
+   position en pantallas anchas y se acomoda abajo en angostas. */
+.a-al-margen {
+  float: right;
+  width: min(100%, 210px);
+  margin: .2em 0 1em 1.2em;
+  padding: .7em .85em .75em;
+  background: color-mix(in srgb, var(--durazno) 30%, var(--papel-caja));
+  border: var(--trazo) dashed color-mix(in srgb, var(--tinta) 45%, transparent);
+  border-radius: var(--r-chico);
+  font-family: var(--f-fina);
+  font-size: 1.02rem;
+  line-height: 1.35;
+  color: var(--tinta-2);
+}
+.a-al-margen > :last-child { margin-bottom: 0; }
+@media (max-width: 700px) {
+  .a-al-margen { float: none; width: auto; margin: 1em 0 1.2em; }
+}
+
+/* a-fuente — el pie de la fuente. Siempre chico y siempre visible. */
+.a-fuente {
+  font-size: .86rem;
+  color: var(--tinta-2);
+  margin-top: 2.2em;
+  padding-top: .6em;
+  border-top: 1.5px dashed var(--tinta-3);
+}
+.a-fuente a { color: inherit; }
+
+/* a-cita — voz de otro. Italica y con comillas dibujadas. */
+.a-cita {
+  margin: 1.2em 0;
+  padding: .3em 0 .3em 1.4em;
+  border-left: 4px solid var(--rosa-fuerte);
+  font-style: italic;
+  color: var(--tinta-2);
+}
+.a-cita > :last-child { margin-bottom: 0; }
+
+/* a-tablero — tabla con cabecera de color. Para comparaciones. */
+.a-tablero {
+  margin: 1.3em 0;
+  border: var(--trazo) solid var(--tinta);
+  border-radius: var(--r);
+  overflow: hidden;
+}
+.a-tablero th { background: var(--menta); border-bottom: var(--trazo) solid var(--tinta); }
+.a-tablero td, .a-tablero th { border-right: 1px dashed color-mix(in srgb, var(--tinta) 35%, transparent); }
+.a-tablero td:last-child, .a-tablero th:last-child { border-right: 0; }
+
+/* ==================================================== 6. DECORACION ======== */
+
+/* d-cinta — washi tape que pega una etiqueta a la hoja.
+ * La veta va como background-image y NO como segunda capa de mascara: con dos
+ * capas hay que depender de mask-composite, y donde no esta soportado las rayas
+ * se invierten en agujeros y la cinta parece un codigo de barras. Medido: era
+ * justo lo que pasaba. La mascara queda con una sola capa: los bordes rasgados. */
+.d-cinta {
+  position: absolute;
+  width: 108px; height: 26px;
+  background-color: var(--acento-fondo, var(--menta));
+  background-image: repeating-linear-gradient(
+    90deg,
+    rgba(255, 255, 255, .3) 0 10px,
+    rgba(255, 255, 255, 0) 10px 12px,
+    rgba(0, 0, 0, .05) 12px 14px
+  );
+  opacity: .85;
+  box-shadow: 0 1px 2px var(--sombra-baja);
+  -webkit-mask: linear-gradient(90deg,
+    transparent 0 3px, #000 3px calc(100% - 3px), transparent calc(100% - 3px));
+  mask: linear-gradient(90deg,
+    transparent 0 3px, #000 3px calc(100% - 3px), transparent calc(100% - 3px));
+}
+.d-cinta-izq  { top: -11px; left: -22px; transform: rotate(-7deg); }
+.d-cinta-der  { top: -12px; right: -24px; transform: rotate(6deg); }
+
+/* d-chispa — la estrella chiquita que.framea un titulo. */
+.d-chispa {
+  display: inline-block; width: 1em; height: 1em;
+  color: var(--acento);
+  vertical-align: -.12em;
+}
+
+/* d-linea — separador ondulado dibujado a mano. */
+.d-linea {
+  display: block; width: 100%;
+  margin: 1.5em 0;
+  color: color-mix(in srgb, var(--tinta) 45%, transparent);
+}
+
+/* d-nota — etiqueta suelta de post-it. */
+.d-nota {
+  display: inline-block;
+  padding: .8em .95em .85em;
+  background: color-mix(in srgb, var(--manteca) 55%, var(--papel-caja));
+  box-shadow: 3px 4px 0 var(--sombra-baja);
+  transform: rotate(-2deg);
+  font-family: var(--f-manus);
+  line-height: 1.35;
+}
+
+/* d-pin — la chincheta que fija la hoja. */
+.d-pin { display: inline-block; width: 1.1em; height: 1.1em; color: var(--coral-fuerte); }
+
+/* d-folio — el numero de pagina, abajo a la derecha. */
+.d-folio {
+  position: absolute; bottom: 18px; right: 26px;
+  display: inline-flex; align-items: center; gap: .35em;
+  font-family: var(--f-mono); font-size: .82rem; color: var(--tinta-3);
+}
+.d-folio::before {
+  content: ""; width: 1.6em; border-top: 2px dashed currentColor;
+}
+
+/* d-sello — el sello circular que dice "revisado", "importante", etc. */
+.d-sello {
+  display: inline-grid; place-items: center;
+  min-width: 96px; height: 96px; padding: .6em;
+  border: 3px double currentColor; border-radius: 50%;
+  color: var(--coral-fuerte);
+  font-family: var(--f-angosta); font-size: 1.2rem; line-height: 1;
+  letter-spacing: .1em; text-transform: uppercase; text-align: center;
+  transform: rotate(-11deg);
+  opacity: .88;
+}
+
+/* d-arriba — link al indice, en la esquina de la hoja. Solo aparece en el modo
+   de un solo archivo, donde el scroll entre 20 o 30 hojas es largo. */
+.d-arriba {
+  position: absolute; top: 16px; right: 24px;
+  font-family: var(--f-condensada); font-size: .78rem;
+  letter-spacing: .16em; text-transform: uppercase;
+  padding: .2em .7em .26em;
+  border: 1.5px solid var(--tinta); border-radius: 3px;
+  background: var(--papel-caja);
+  text-decoration: none; color: inherit;
+}
+.d-arriba:hover { background: var(--acento-fondo); }
+
+/* d-dibujo — cualquier SVG de trazos.js.
+ * NO debe llevar width:100%: el viewBox de las decoraciones es cuadrado
+ * (la chispa es 22x22) y con height:auto esa crece hasta el ancho del
+ * contenedor. Medido: la chispa del indice se renderizo a 750x750 px y tapo la
+ * hoja entera. Cada decoracion trae su width/height en el atributo SVG; el CSS
+ * solo acota. */
+.d-dibujo {
+  display: block;
+  width: auto;
+  height: auto;
+  max-width: 100%;
+  max-height: 90px;          /* red de seguridad: ninguna decoracion pasa esto */
+  color: var(--tinta);
+}
+.d-dibujo--linea      { width: 100%; }
+.d-dibujo--subrayado { width: 260px; }
+.d-dibujo--chispa     { width: 1.15em; height: 1.15em; }
+.d-dibujo--flotante {
+  float: right; width: 74px; margin: .1em 0 .6em 1em; opacity: .9;
+}
+
+/* ==================================================== 7. CARPETA ========== */
+
+/* c-portada — la tapa de la carpeta. */
+.c-portada {
+  position: relative;
+  padding: 64px 52px 56px;
+  text-align: center;
+  overflow: hidden;
+}
+.c-portada .t-cursiva { font-size: clamp(2.8rem, 9vw, 5.4rem); }
+.c-portada .t-manuscrita { color: var(--tinta-2); }
+.c-portada__meta {
+  margin-top: 1.8em;
+  display: flex; flex-wrap: wrap; gap: .6em; justify-content: center;
+  font-family: var(--f-condensada); font-size: .92rem;
+  letter-spacing: .14em; text-transform: uppercase;
+}
+.c-portada__meta span {
+  padding: .25em .8em .3em;
+  border: 1.5px solid var(--tinta); border-radius: 3px;
+}
+
+/* c-divisorias — las pestañas de colores de la carpeta. Es la arquitectura
+   visual que da nombre a "apunte de carpeta":Tabs que se leen sin abrir. */
+.c-divisorias {
+  display: flex; align-items: flex-end; gap: 6px;
+  flex-wrap: wrap-reverse;
+  padding: 0 0 0 16px;
+  /* counteract p-carpeta padding-bottom so the tabs sit ON the folder edge,
+     the way a divider does. Without this they look clipped. */
+  margin-bottom: -30px;
+  position: relative; z-index: 1;
+}
+.c-divisionia {          /* alias con falta, por si se escribe asi */
+  display: block;
+}
+.c-tab {
+  --tab: var(--rosa);
+  display: block;
+  min-width: 78px;
+  padding: .5em .8em .55em;
+  background: var(--tab);
+  border: var(--trazo) solid var(--tinta);
+  border-bottom: 0;
+  /* la pestaña: rectangular con el borde derecho en diagonal */
+  clip-path: polygon(0 0, calc(100% - 14px) 0, 100% 100%, 0 100%);
+  font-family: var(--f-angosta); font-size: 1.4rem; line-height: 1;
+  letter-spacing: .06em; text-transform: uppercase; text-align: center;
+  color: var(--tinta);
+  text-decoration: none;
+  transition: transform .18s ease;
+}
+.c-tab:hover, .c-tab:focus-visible { transform: translateY(-4px); }
+.c-tab[aria-current="page"] {
+  background: var(--papel);
+  box-shadow: 0 -3px 0 var(--tinta) inset;
+}
+/* variantes de color por posicion */
+.c-tab:nth-child(4n+1) { --tab: var(--rosa); }
+.c-tab:nth-child(4n+2) { --tab: var(--menta); }
+.c-tab:nth-child(4n+3) { --tab: var(--manteca); }
+.c-tab:nth-child(4n+4) { --tab: var(--lila); }
+
+/* c-indice — la grilla de hojas. */
+.c-indice {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(216px, 1fr));
+  gap: 22px;
+  margin: 1.6em 0 .4em;
+}
+.c-hoja-enlace {
+  display: block;
+  padding: 16px 16px 18px;
+  background: var(--papel-caja);
+  border: var(--trazo) solid var(--tinta);
+  border-radius: 4px 4px 16px 4px;
+  box-shadow: 4px 5px 0 var(--sombra-baja);
+  text-decoration: none; color: inherit;
+  transform: rotate(var(--tilt, 0deg));
+  transition: transform .18s ease, box-shadow .18s ease;
+}
+.c-hoja-enlace:hover, .c-hoja-enlace:focus-visible {
+  transform: rotate(0deg) translateY(-3px);
+  box-shadow: 6px 9px 0 var(--sombra-baja);
+}
+/* Los tres van como <span>, asi que necesitan display:block: sin esto el titulo
+   y la descripcion de la tarjeta salian en la misma linea. */
+.c-hoja-enlace__num {
+  display: block;
+  font-family: var(--f-condensada); font-size: .8rem;
+  letter-spacing: .2em; color: var(--tinta-3);
+}
+.c-hoja-enlace__t {
+  display: block;
+  font-family: var(--f-titulo); font-weight: 700; font-size: 1.75rem;
+  line-height: 1.1; margin: .15em 0 .3em;
+}
+.c-hoja-enlace__d { display: block; font-size: .93rem; color: var(--tinta-2); line-height: 1.45; }
+.c-hoja-enlace__tema {
+  margin-top: .7em; height: 8px; border-radius: 4px;
+  background: var(--rosa);
+}
+
+/* c-navegacion — anterior / siguiente al pie de cada apunte. */
+.c-navegacion {
+  display: flex; justify-content: space-between; gap: 14px;
+  margin: 1.6em 0 0; padding-top: 1em;
+  border-top: 2px dashed var(--tinta-3);
+  font-size: .95rem;
+}
+.c-navegacion a {
+  display: inline-block; max-width: 48%;
+  padding: .35em .8em .4em;
+  border: 1.5px solid var(--tinta); border-radius: 3px;
+  text-decoration: none; color: inherit; background: var(--papel-caja);
+}
+.c-navegacion a:hover { background: var(--acento-fondo); }
+.c-navegacion .ant { margin-right: auto; text-align: left; }
+.c-navegacion .sig { margin-left: auto; text-align: right; }
+
+/* c-rejilla — dos columnas, para cuando el apunte tiene parte densa y parte suelta. */
+.c-rejilla {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 26px;
+  align-items: start;
+}
+
+/* ==================================================== 8. AJUSTES ========== */
+
+@media (max-width: 620px) {
+  .p-hoja { padding: 30px 20px 46px 34px; }
+  .p-hoja.d-margen::after { left: 26px; }
+  .p-hoja.d-agujeros::before { display: none; }
+  .c-portada { padding: 44px 22px 40px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .apuntes * { transition: none !important; animation: none !important; }
+}
+
+@media print {
+  .apuntes { background: #fff; }
+  .p-hoja, .p-carpeta { box-shadow: none; border-radius: 0; break-inside: avoid; }
+  .c-navegacion, .d-cinta { display: none; }
+  a { color: inherit; text-decoration: underline; }
+}
+
+/* Sirve igual de selector neutral en los navegadores que no soportan color-mix */
+@supports not (color: color-mix(in srgb, red 50%, blue)) {
+  .a-definicion { background: var(--papel-caja); }
+  .a-tip { background: color-mix(in srgb, var(--manteca) 26%, var(--papel-caja)); }
+}

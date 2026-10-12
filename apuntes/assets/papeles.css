@@ -1,0 +1,358 @@
+/* ============================================================================
+   papeles.css — catalogo de superficies
+   ----------------------------------------------------------------------------
+   De donde sale: el catalogo de generadores de papel imprimible (graph, dot,
+   lined, isometric, hexagon, Cornell, Seyes, Genkouyoushi, music staff,
+   calligraphy, Tian Zi Ge, comic panels, storyboard, coordinate, polar,
+   engineering, logarithmic, brick, quilting...). Se implementaron los que
+   sirven para tomar apuntes, mas cuatro tematicos.
+
+   COMO SE USA — dos formas:
+
+   1) Por hoja, con la clase:
+        <article class="p-hoja p-textura" data-papel="isometrica">   <!-- asi -->
+
+   2) Para toda la carpeta de una, en el <html>:
+        <html data-papel="kraft">
+        y despues cualquier .p-hoja lo toma.
+
+   La textura vive en la variable --textura y el color en --papel. Por eso
+   cambiar de papel no es cambiar el HTML: es cambiar un atributo.
+   ========================================================================= */
+
+:root {
+  /* por defecto: papel liso. La textura la define data-papel. */
+  --textura: none;
+  --interlinea: 1.62;
+  --papel: #fbf7f1;
+  --papel-bravo: #fdfaf5;
+  --papel-caja: #fffdf9;
+  --cuadricula: #e9dccd;
+  --cuadricula-2: #f2e9dd;
+  --tinta: #2c231e;
+  --tinta-2: #6b5c50;
+  --tinta-3: #a2938a;
+
+  /* radios de textura que se reusan, para no repetir numeros magicos */
+  --rejilla-fina: 8px;
+  --rejilla-media: 22px;
+  --rejilla-gruesa: 50px;
+  --ang-iso: 60deg;
+}
+
+/* ==========================================================================
+   1. LOS PAPELES
+   Cada bloque define --textura y los colores. La .p-textura de arriba es la
+   que las aplica.
+   ========================================================================== */
+
+/* --- cuadriculada: la clasica. Doble rejilla, suave cada 10 y marcada cada 50. */
+[data-papel="cuadros"] {
+  --textura:
+    linear-gradient(var(--cuadricula-2) 1px, transparent 1px),
+    linear-gradient(90deg, var(--cuadricula-2) 1px, transparent 1px),
+    linear-gradient(var(--cuadricula) 1px, transparent 1px),
+    linear-gradient(90deg, var(--cuadricula) 1px, transparent 1px);
+  --tam-textura: 10px 10px, 10px 10px, 50px 50px, 50px 50px;
+}
+
+/* --- cuadriculada fina: 2 mm, la de los cuadernos pequenos. */
+[data-papel="cuadros-finos"] {
+  --textura:
+    linear-gradient(var(--cuadricula) 1px, transparent 1px),
+    linear-gradient(90deg, var(--cuadricula) 1px, transparent 1px);
+  --tam-textura: 6px 6px;
+}
+
+/* --- cuadriculada gruesa: solo la de 1 cm, para calculos grandes. */
+[data-papel="cuadros-gruesos"] {
+  --textura:
+    linear-gradient(var(--cuadricula) 1.5px, transparent 1.5px),
+    linear-gradient(90deg, var(--cuadricula) 1.5px, transparent 1.5px);
+  --tam-textura: 34px 34px;
+}
+
+/* --- rayada: la de escribir corrido. El interlinea sigue a la textura. */
+[data-papel="rayas"] {
+  --textura: linear-gradient(var(--cuadricula-2) 1px, transparent 1px);
+  --tam-textura: 100% 30px;
+  --interlinea: 30px;
+}
+
+/* --- rayadas finas (regla seyes): linea fina cada 8px y guia marcada cada 4. */
+[data-papel="rayas-finas"] {
+  --textura:
+    linear-gradient(var(--cuadricula) 1px, transparent 1px),
+    linear-gradient(var(--cuadricula-2) 1.6px, transparent 1.6px);
+  --tam-textura: 100% 8px, 100% 32px;
+  --interlinea: 32px;
+}
+
+/* --- punteada: la del bullet journal. */
+[data-papel="punteada"] {
+  --textura: radial-gradient(var(--tinta-3) 1px, transparent 1.2px);
+  --tam-textura: 22px 22px;
+}
+
+/* Las tres texturas de rejilla diagonal usan PARADA SECA: el color se corta en
+   el 50% del tile con un borde de 1px. Con la forma corta habitual
+   (linear-gradient(30deg, color 1px, transparent 1px)) la linea cae donde
+   quiere dentro del tile y la trama se ve como rayas verticales. Medido: asi
+   se veia en la galeria. */
+
+[data-papel="isometrica"] {
+  --textura:
+    linear-gradient(30deg, transparent calc(50% - 1px), var(--cuadricula) calc(50% - 1px), var(--cuadricula) 50%, transparent 50%),
+    linear-gradient(-30deg, transparent calc(50% - 1px), var(--cuadricula) calc(50% - 1px), var(--cuadricula) 50%, transparent 50%),
+    linear-gradient(90deg, transparent calc(50% - 1px), var(--cuadricula-2) calc(50% - 1px), var(--cuadricula-2) 50%, transparent 50%);
+  --tam-textura: 48px 28px, 48px 28px, 24px 28px;
+}
+
+[data-papel="triangular"] {
+  --textura:
+    linear-gradient(30deg, transparent calc(50% - 1px), var(--cuadricula) calc(50% - 1px), var(--cuadricula) 50%, transparent 50%),
+    linear-gradient(-30deg, transparent calc(50% - 1px), var(--cuadricula) calc(50% - 1px), var(--cuadricula) 50%, transparent 50%);
+  --tam-textura: 58px 34px, 58px 34px;
+}
+
+/* --- hexagonal: panal de punta arriba.
+   El tile va en razon 4:7 (44x77) porque las tres direcciones tienen que
+   cerrar. Con el tile cuadrado de la trama triangular esto sale como triangulos,
+   no como panal. Y 4:7 es la menor razon que funciona: un tile mas chico
+   (80x140) no entra en una hoja de apunte y se veia vacio en la galeria. */
+[data-papel="hexagonal"] {
+  --textura:
+    linear-gradient(30deg, var(--cuadricula) 12%, transparent 12.5%, transparent 87%, var(--cuadricula) 87.5%, var(--cuadricula)),
+    linear-gradient(30deg, var(--cuadricula) 12%, transparent 12.5%, transparent 87%, var(--cuadricula) 87.5%, var(--cuadricula)),
+    linear-gradient(150deg, var(--cuadricula) 12%, transparent 12.5%, transparent 87%, var(--cuadricula) 87.5%, var(--cuadricula)),
+    linear-gradient(150deg, var(--cuadricula) 12%, transparent 12.5%, transparent 87%, var(--cuadricula) 87.5%, var(--cuadricula)),
+    linear-gradient(60deg, var(--cuadricula-2) 25%%, transparent 25.5%%, transparent 75%%, var(--cuadricula-2) 75%%, var(--cuadricula-2)),
+    linear-gradient(60deg, var(--cuadricula-2) 25%%, transparent 25.5%%, transparent 75%%, var(--cuadricula-2) 75%%, var(--cuadricula-2));
+  --tam-textura: 44px 77px;
+}
+
+/* --- ladrillo: aparejo a medio asta. La tercera capa va desplazada media
+   hilada; se hace con --pos-textura, que .p-textura aplica. Antes estaba en
+   una pseudo-capa de la clase .p-ladrillo, y como el papel se elige solo con
+   data-papel esa clase nunca venia y el aparejo salia recto. */
+[data-papel="ladrillo"] {
+  --textura:
+    linear-gradient(var(--cuadricula) 1.5px, transparent 1.5px),
+    linear-gradient(90deg, var(--cuadricula) 1.5px, transparent 1.5px),
+    linear-gradient(90deg, var(--cuadricula) 1.5px, transparent 1.5px);
+  --tam-textura: 100% 24px, 48px 100%, 48px 100%;
+  --pos-textura: 0 0, 0 0, 24px 0;
+}
+
+/* --- ingenieria: rejilla con regla marcada cada 5 casillas. */
+[data-papel="ingenieria"] {
+  --textura:
+    linear-gradient(var(--cuadricula-2) 1px, transparent 1px),
+    linear-gradient(90deg, var(--cuadricula-2) 1px, transparent 1px),
+    linear-gradient(var(--tinta-3) 1.6px, transparent 1.6px),
+    linear-gradient(90deg, var(--tinta-3) 1.6px, transparent 1.6px);
+  --tam-textura: 10px 10px, 10px 10px, 50px 50px, 50px 50px;
+}
+
+/* --- coordenadas: ejes X e Y cruzados por el centro. */
+[data-papel="coordenadas"] {
+  --textura:
+    linear-gradient(var(--cuadricula-2) 1px, transparent 1px),
+    linear-gradient(90deg, var(--cuadricula-2) 1px, transparent 1px),
+    linear-gradient(var(--tinta-2) 2px, transparent 2px),
+    linear-gradient(90deg, var(--tinta-2) 2px, transparent 2px);
+  --tam-textura: 22px 22px, 22px 22px, 100% 100%, 100% 100%;
+}
+
+/* --- polar: circunferencias concentricas y radios. */
+[data-papel="polar"] {
+  --textura:
+    repeating-radial-gradient(circle at 50% 50%,
+      transparent 0 21px, var(--cuadricula) 21px 22px),
+    repeating-conic-gradient(from 0deg at 50% 50%,
+      var(--cuadricula-2) 0deg 2deg, transparent 2deg 15deg);
+}
+
+/* --- cornell: columna de palabras clave a la izquierda y banda de resumen. */
+[data-papel="cornell"] {
+  --textura:
+    linear-gradient(var(--cuadricula-2) 1px, transparent 1px),
+    linear-gradient(90deg, transparent calc(26% - 1px), var(--tinta-3) calc(26% - 1px),
+                    var(--tinta-3) 26%, transparent 26%),
+    linear-gradient(transparent calc(82% - 1px), var(--tinta-3) calc(82% - 1px),
+                    var(--tinta-3) 82%, transparent 82%);
+  --tam-textura: 100% 28px, 100% 100%, 100% 100%;
+  --interlinea: 28px;
+  --papel-cornell: 26%;
+  --banda-cornell: 18%;
+}
+
+/* --- caligrafia: bandas regladas con guía inclinada 55 grados. */
+[data-papel="caligrafia"] {
+  --textura:
+    linear-gradient(var(--cuadricula) 1.4px, transparent 1.4px),
+    repeating-linear-gradient(55deg,
+      transparent 0 22px,
+      color-mix(in srgb, var(--tinta-3) 42%, transparent) 22px 23px);
+  --tam-textura: 100% 46px, auto;
+}
+
+/* --- genkouyoushi / tian zi ge: casillero de escritura con guia en cruz. */
+[data-papel="casillero"] {
+  --textura:
+    linear-gradient(var(--cuadricula) 1.5px, transparent 1.5px),
+    linear-gradient(90deg, var(--cuadricula) 1.5px, transparent 1.5px),
+    linear-gradient(90deg, transparent calc(50% - .5px),
+      color-mix(in srgb, var(--tinta-3) 55%, transparent) calc(50% - .5px),
+      color-mix(in srgb, var(--tinta-3) 55%, transparent) calc(50% + .5px),
+      transparent calc(50% + .5px));
+  --tam-textura: 38px 38px, 38px 38px, 38px 38px;
+}
+
+/* --- pentagrama: grupos de 5 lineas, como el pentagrama de musica. */
+[data-papel="musical"] {
+  --textura:
+    repeating-linear-gradient(transparent 0 7px,
+      var(--tinta-3) 7px 8px, transparent 8px 15px,
+      var(--tinta-3) 15px 16px, transparent 16px 23px,
+      var(--tinta-3) 23px 24px, transparent 24px 31px,
+      var(--tinta-3) 31px 32px, transparent 32px 39px,
+      var(--tinta-3) 39px 40px, transparent 40px 66px);
+  --interlinea: 66px;
+}
+
+/* --- vinetas: panos de historieta con medianiles. */
+[data-papel="vinetas"] {
+  --textura:
+    linear-gradient(var(--tinta) 4px, transparent 4px),
+    linear-gradient(90deg, var(--tinta) 4px, transparent 4px);
+  --tam-textura: 100% 50%, 34% 100%;
+}
+
+/* ---periodico: columnas de periodico sobre gris de tinta. */
+[data-papel="periodico"] {
+  --papel: #f2efe7;
+  --papel-caja: #faf8f2;
+  --cuadricula-2: #d8d2c4;
+  --textura:
+    linear-gradient(90deg, transparent calc(33.33% - .5px), var(--cuadricula) calc(33.33% - .5px),
+                    var(--cuadricula) calc(33.33% + .5px), transparent calc(33.33% + .5px),
+                    transparent calc(66.66% - .5px), var(--cuadricula) calc(66.66% - .5px),
+                    var(--cuadricula) calc(66.66% + .5px), transparent calc(66.66% + .5px));
+  --tam-textura: 100% 100%;
+  --interlinea: 21px;
+}
+
+/* --- kraft: papel reciclado, brown. Con grano. */
+[data-papel="kraft"] {
+  --papel: #e8dcc6;
+  --papel-bravo: #efe5d2;
+  --papel-caja: #f6efe0;
+  --cuadricula: #c9b795;
+  --cuadricula-2: #ddcdaa;
+  --tinta: #3a2c1c;
+  --tinta-2: #7a6448;
+  --tinta-3: #a89070;
+  --textura:
+    repeating-linear-gradient(37deg, rgba(122, 100, 72, .07) 0 2px, transparent 2px 5px),
+    repeating-linear-gradient(-51deg, rgba(122, 100, 72, .06) 0 3px, transparent 3px 7px);
+}
+
+/* --- azul: plano tecnico, azul con rejilla clara. */
+[data-papel="azul"] {
+  --papel: #16375e;
+  --papel-bravo: #1b4270;
+  --papel-caja: #fbf7f1;
+  --cuadricula: #7fa8d6;
+  --cuadricula-2: #4d7bb0;
+  --tinta: #eaf2fc;
+  --tinta-2: #a8c6e6;
+  --tinta-3: #7fa8d6;
+  --acento-fondo: #f6c86a;
+  --rosa-fuerte: #ffb3c9;
+  --menta-fuerte: #7fe0bd;
+  --textura:
+    linear-gradient(rgba(214, 233, 255, .17) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(214, 233, 255, .17) 1px, transparent 1px),
+    linear-gradient(rgba(214, 233, 255, .3) 1.5px, transparent 1.5px),
+    linear-gradient(90deg, rgba(214, 233, 255, .3) 1.5px, transparent 1.5px);
+  --tam-textura: 10px 10px, 10px 10px, 50px 50px, 50px 50px;
+}
+
+/* --- pizarron: verde de pizarrón con tiza. Sin textura, solo color. */
+[data-papel="pizarron"] {
+  --papel: #22483c;
+  --papel-bravo: #275144;
+  --papel-caja: #2d5a4b;
+  --cuadricula: #3d6d5c;
+  --cuadricula-2: #325c4c;
+  --tinta: #eef6f0;
+  --tinta-2: #b6d2c4;
+  --tinta-3: #85ab9a;
+}
+
+/* ==========================================================================
+   2. COMO SE APLICA
+   ========================================================================== */
+
+/* p-textura — aplica lo que diga data-papel. Es la unica que hace falta. */
+.p-textura {
+  background-color: var(--papel-bravo, var(--papel));
+  background-image: var(--textura);
+  background-size: var(--tam-textura, auto);
+  background-position: var(--pos-textura, 0 0);
+  line-height: var(--interlinea);
+}
+
+/* p-desgarrado — borde rasgado arriba y abajo.
+   Va como mascara de un solo gradiente: con dos capas hay que depender de
+   mask-composite y donde no esta soportado el resultado es peor que no hacerlo. */
+.p-desgarrado {
+  --textura: var(--textura, none);
+  position: relative;
+  padding-top: 30px;
+  padding-bottom: 30px;
+  -webkit-mask:
+    linear-gradient(180deg, #000 0 14px, transparent 14px) top / 100% 26px no-repeat,
+    linear-gradient(0deg,   #000 0 14px, transparent 14px) bottom / 100% 26px no-repeat,
+    linear-gradient(#000, #000) center / 100% 100% no-repeat;
+  mask:
+    linear-gradient(180deg, #000 0 14px, transparent 14px) top / 100% 26px no-repeat,
+    linear-gradient(0deg,   #000 0 14px, transparent 14px) bottom / 100% 26px no-repeat,
+    linear-gradient(#000, #000) center / 100% 100% no-repeat;
+  -webkit-mask-composite: source-over;
+  mask-composite: add;
+}
+/* el recorte se hace con una punta Gaussiana: da el escalonado del papel roto */
+.p-desgarrado::after {
+  content: "";
+  position: absolute; inset: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(circle at 50% 0, transparent 6px, var(--papel-bravo) 6.5px) repeat-x top / 13px 13px,
+    radial-gradient(circle at 50% 100%, transparent 6px, var(--papel-bravo) 6.5px) repeat-x bottom / 13px 13px;
+  -webkit-mask: linear-gradient(#000, #000);
+  clip-path: polygon(
+    0 14px, 4% 9px, 9% 15px, 14% 8px, 20% 14px, 26% 8px, 32% 15px, 38% 9px,
+    45% 14px, 51% 8px, 58% 15px, 64% 9px, 71% 14px, 77% 8px, 84% 15px, 90% 9px,
+    96% 14px, 100% 10px,
+    100% calc(100% - 14px), 96% calc(100% - 9px), 90% calc(100% - 15px),
+    84% calc(100% - 8px), 77% calc(100% - 14px), 71% calc(100% - 8px),
+    64% calc(100% - 15px), 58% calc(100% - 9px), 51% calc(100% - 14px),
+    45% calc(100% - 8px), 38% calc(100% - 15px), 32% calc(100% - 9px),
+    26% calc(100% - 14px), 20% calc(100% - 8px), 14% calc(100% - 15px),
+    9% calc(100% - 9px), 4% calc(100% - 14px), 0 calc(100% - 9px)
+  );
+}
+
+/* ==========================================================================
+   3. COMPATIBILIDAD — los nombres de clase viejos
+   Los .p-cuadros / .p-rayas / .p-punteada de la v1 ahora son alias de textura.
+   ========================================================================== */
+
+.p-cuadros  { background-image: var(--textura); background-size: var(--tam-textura, auto);
+              background-color: var(--papel-bravo, var(--papel)); line-height: var(--interlinea); }
+.p-rayas    { background-image: var(--textura); background-size: var(--tam-textura, auto);
+              background-color: var(--papel); line-height: var(--interlinea); }
+.p-punteado { background-image: var(--textura); background-size: var(--tam-textura, auto);
+              background-color: var(--papel); line-height: var(--interlinea); }
